@@ -1,9 +1,8 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 // Calls a pointer that has been authenticated with PACIA
-static inline void __attribute__((always_inline)) call(void *ptr)
+inline void __attribute__((always_inline)) __call(void *ptr)
 {
     /* blr doesn't play nice with PAC-ed pointers, so we need to use blraa
      * But using blraa would mean that we need to get the modifier out of the pointer
@@ -19,6 +18,15 @@ static inline void __attribute__((always_inline)) call(void *ptr)
         :
         : "r"(ptr)
         :); // This is basically a blr instruction for PAC-ed pointers.
+}
+
+inline void *__attribute__((always_inline)) __auth(void *ptr)
+{
+    __asm__ __volatile__(
+        "pacia %0, %0\n" // Pointer authentication using pacia
+        : "+r"(ptr)      // Input/output operand
+    );
+    return ptr;
 }
 
 void memauth(void *beginning, size_t len)
@@ -40,65 +48,4 @@ void memauth(void *beginning, size_t len)
         : "r"(end)             // Input operand: end pointer
         : "x2", "cc", "memory" // Clobbered registers and flags
     );
-}
-
-int protected() {
-    asm volatile (
-        "mov x9, x8\n"
-        "mov x10, #0xffffffffffff\n"
-        "and x9, x9, x10\n"
-        "autia x8, x9\n"
-        // Function stuff goes here
-        "mov x0, #234\n"
-        "ret\n"
-    );
-}
-
-int unprotected() {
-    asm volatile (
-        // Function stuff goes here
-        "mov x0, #567\n"
-        "ret\n"
-    );
-}
-
-
-int main(){
-
-    int (*protected_ptr)() = protected;
-    int (*protected_ptr_unsigned)() = protected; 
-    asm volatile(
-        "pacia %1, %0\n"
-        : "=r" (protected_ptr)
-        : "r" (protected_ptr)
-        :
-    );
-
-    int (*unprotected_ptr)() = unprotected;
-
-    int result = 0;
-    result = unprotected_ptr();
-    if (result != 567){
-        printf("Something is fundamentally wrong\n");
-        exit(1);
-    } else {
-        printf("Unprotected function works as gadget\n");
-    }
-
-    asm volatile ("mov x8, %1\n" "blraa x8, %2\n" "mov %0, x0\n" : "=r" (result) : "r" (protected_ptr), "r" (protected_ptr_unsigned) : "x8");
-    if (result != 234){
-        printf("Something is fundamentally wrong (result: %d)\n", result);
-        exit(1);
-    } else {
-        printf("Protected function works when signed\n");
-    }
-
-    result = protected_ptr_unsigned();
-    if (result != 234){
-        printf("Something is fundamentally wrong\n");
-        exit(1);
-    } else {
-        printf("protected function works when unsigned, very bad!\n");
-    }
-
 }
