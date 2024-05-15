@@ -1,24 +1,5 @@
 #include "bti_hlp.h"
 
-// Calls a pointer that has been authenticated with PACIA
-inline void __attribute__((always_inline)) __call(void *ptr, ...)
-{
-    /* blr doesn't play nice with PAC-ed pointers, so we need to use blraa
-     * But using blraa would mean that we need to get the modifier out of the pointer
-     * ^ which is more overhead and is done on the callee side anyways.
-     * The compromise here: mask out the modifier and use blr in a copy of the pointer
-     */
-
-    asm volatile(
-        "mov x9, %0\n"
-        "mov x10, #0xffffffffffff\n"
-        "and x9, x9, x10\n"
-        "blr x9\n"
-        :
-        : "r"(ptr)
-        :); // This is basically a blr instruction for PAC-ed pointers.
-}
-
 inline void *__attribute__((always_inline)) __pac_ptr(void *ptr)
 {
     __asm__ __volatile__(
@@ -26,24 +7,6 @@ inline void *__attribute__((always_inline)) __pac_ptr(void *ptr)
         : "+r"(ptr)      // Input/output operand
     );
     return ptr;
-}
-
-inline void __attribute__((always_inline)) __aut_ptr(void *ptr)
-{
-    __asm__ __volatile__(
-        "autia %0, %0\n" // Address authentication using autia
-        :
-        : "r"(ptr) // Input operand
-    );
-}
-
-inline void __attribute__((always_inline)) __aut_ptr_mask_x8()
-{
-    __asm__ __volatile__(
-        "mov x9, x8\n"
-        "and x9, x9, #0xffffffffffff\n"
-        "autia x8, x9\n"
-    );
 }
 
 void memauth(void *beginning, size_t len)

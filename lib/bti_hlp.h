@@ -11,13 +11,6 @@ void memauth(void *beginning, size_t len);
 //Function prototypes for private functions (i.e. those that would ideally be replaced by compiler magic later)
 
 void *__pac_ptr(void *ptr);
-void __call_in_x8(void *ptr, ...);
-void __aut_ptr_mask_x8();
-
-// Less used:
-
-//void __call(void *ptr);
-void __aut_ptr(void *ptr);
 
 
 /*
@@ -52,19 +45,3 @@ Future compiler support could replace this whole thing with a 'blraa' instructio
         : "x9"                                      \
     );                                              \
 }
-
-
-//Macro for making authenticating pointers easier
-#define __aut_ptr_macro(reg) {                    \
-    void* __aut_ptr_value;                        \
-    asm volatile (                                \
-        "mov %0, " reg "\n"                       \
-        : "=r" (__aut_ptr_value)  /* output */    \
-        : /* No inputs */                         \
-        : /* Nothing clobbered */                 \
-    );                                            \
-    __aut_ptr(__aut_ptr_value);                   \
-    /*__asm__ volatile ("" __func__ "_nobti:") /* label for the version directly called */     \
-}
-
-#endif // BTI_HLP_H
