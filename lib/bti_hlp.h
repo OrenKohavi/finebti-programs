@@ -17,7 +17,7 @@ Since compiler support is not here yet, I can't force the system to use the `blr
 As a result, this macro needs to be invoked for every call.
 Future compiler support could replace this whole thing with a 'blraa' instruction.
 */
-#define __call_macro(func, ...) ({                   \
+#define __call_macro(func, ...) {                    \
     typeof(func(__VA_ARGS__)) __result;              \
     typedef typeof(func) func_ptr_type;              \
     func_ptr_type temp_func = func;                  \
@@ -25,12 +25,26 @@ Future compiler support could replace this whole thing with a 'blraa' instructio
     __asm__ volatile (                               \
         "mov x8, %0\n\t"                             \
         :                                            \
-        : "r"(func)                             \
+        : "r"(func)                                  \
         : "x8"                                       \
     );                                               \
     __result = temp_func(__VA_ARGS__);               \
     __result;                                        \
-})
+}
+
+#define __call_macro_voidreturn(func, ...) {         \
+    typedef typeof(func) func_ptr_type;              \
+    func_ptr_type temp_func = func;                  \
+    temp_func = (func_ptr_type)((uintptr_t)temp_func & 0xFFFFFFFFFFFF);  \
+    __asm__ volatile (                               \
+        "mov x8, %0\n\t"                             \
+        :                                            \
+        : "r"(func)                                  \
+        : "x8"                                       \
+    );                                               \
+    temp_func(__VA_ARGS__);                          \
+}
+
 
 
 
