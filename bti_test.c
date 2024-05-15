@@ -1,10 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
-#include <setjmp.h>
 
 volatile int err_expected = 0;
-static jmp_buf jump_buffer;
 
 void sigill_handler(int sig) {
     if (err_expected == 0) {
@@ -50,8 +48,6 @@ int main() {
     printf("[!] Attempting to run a gadget.. BTI should stop this!\n");
     fflush(stdout);
 
-    // Use setjmp to return to this point if SIGILL is caught
-    setjmp(jump_buffer);
     err_expected = 1;
     result = misaligned_func_ptr();
     err_expected = 0;
