@@ -45,3 +45,5 @@ Future compiler support could replace this whole thing with a 'blraa' instructio
         : "x9"                                      \
     );                                              \
 }
+
+#endif // BTI_HLP_H
