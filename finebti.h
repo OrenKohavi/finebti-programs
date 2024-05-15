@@ -46,8 +46,6 @@ Future compiler support could replace this whole thing with a 'blraa' instructio
 }
 
 
-
-
 #define __auth_macro {                              \
     __asm__ volatile (                              \
         "mov x9, x8\n"                              \

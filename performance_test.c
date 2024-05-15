@@ -52,8 +52,6 @@ int main() {
     printf("Time with FineBTI:    %lld nanoseconds\n", finebti_time_taken);
 
     float performance_ratio = (float)finebti_time_taken / standard_time_taken;
-    printf("FineBTI is %.2f times slower than standard BTI\n", performance_ratio);
-
-
+    printf("FineBTI calls are %.2f times slower than standard calls\n", performance_ratio);
 
 }
