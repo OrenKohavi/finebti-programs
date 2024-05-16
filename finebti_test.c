@@ -34,7 +34,7 @@ int main(){
     if (result == 11){
         printf("[+] FineBTI works as expected\n");
     } else {
-        printf("[-] FineBTI failed\n");
+        printf("[-] Function return is wrong -- Unknown failure\n");
         exit(1);
     }
 

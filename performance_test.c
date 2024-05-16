@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <time.h>
 
-#define NUM_ITERATIONS 1000000
+#define NUM_ITERATIONS 100000000
 
 void __attribute__((noinline)) standard_function() {
     volatile int dont_optimize_me = 0; //To prevent the function from being entirely optimized out
@@ -41,7 +41,7 @@ int main() {
     __pac_macro(func);
 
     for (int i = 0; i < NUM_ITERATIONS; i++) {
-        __call_macro_voidreturn(func);
+        __call_macro_voidreturn_noargs(func);
     }
 
     clock_gettime(CLOCK_MONOTONIC, &end);
@@ -54,4 +54,5 @@ int main() {
     float performance_ratio = (float)finebti_time_taken / standard_time_taken;
     printf("FineBTI calls are %.2f times slower than standard calls\n", performance_ratio);
 
+    exit(0);
 }
